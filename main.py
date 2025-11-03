@@ -1,7 +1,9 @@
 import pygame
 import random
+import time
 
 pygame.init()
+pygame.mixer.init()
 # Setting up the Game window
 font=pygame.font.SysFont(None,30)
 big_font=pygame.font.SysFont(None,64)
@@ -15,6 +17,13 @@ green=(0,255,0)
 black=(0,0,0)
 white=(255,255,255)
 clock=pygame.time.Clock()
+bg_music='assets/music_zapsplat_astro_race.mp3'
+eat_sound=pygame.mixer.Sound('assets/music_food.mp3')
+crash_sound=pygame.mixer.Sound('assets/battle-pop-424581.mp3')
+gameover_sound=pygame.mixer.Sound('assets/5d6eab42-7905-4062-8879-ad08802a7412.mp3')
+gameover_sound.set_volume(0.2)
+select_sound=pygame.mixer.Sound('assets/select01.ogg')
+
 running=True
 #Function for randomized food generation
 def random_food(snake):
@@ -29,6 +38,9 @@ def reset_game():
     snake=[(5,5),(4,5),(3,5)]
     score=0
     food=random_food(snake)
+    pygame.mixer.music.load(bg_music)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
     running=True
     return x,y,dx,dy,snake,score,food
 
@@ -57,19 +69,25 @@ while running:
                 x,y,dx,dy,snake,score,food=reset_game()
                 game_over=False
             if event.key==pygame.K_q or event.key==pygame.K_ESCAPE: 
-                running=False           
+                running=False       
+            select_sound.play()        
     if not game_over:
      x+=dx;y+=dy;
     #snake movement according to updates
      snake.insert(0,(x,y))
-
+    #eating food 
      if(snake[0]==food):
         food=random_food(snake)
+        eat_sound.play()
         score+=1
+    #Snake crash    
      else:    
         snake.pop()    
      if x<0 or x>=width//cell_size or y<0 or y>=height//cell_size or (x,y) in snake[1:]:
         game_over=True
+        crash_sound.play()
+        gameover_sound.play()
+        pygame.mixer.music.stop()
     
     #Drawing game elements 
     screen.fill(black)
